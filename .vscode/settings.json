@@ -1,0 +1,11 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "profiles_db",
+            "database": "${workspaceFolder:profile_api}/db/profiles.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true
+}
