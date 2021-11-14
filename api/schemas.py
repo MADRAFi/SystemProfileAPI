@@ -36,3 +36,15 @@ class BaselineResponse(BaseModel):
     # system_id: SystemBase
     class Config:
         orm_mode = True
+
+class ProfileCreate(BaseModel):
+    fqdn: str
+    os_name: str
+    baseline_name: str
+    ip: str
+    netmask: str
+    gateway: str
+    password: str
+
+    class Config:
+        orm_mode = True

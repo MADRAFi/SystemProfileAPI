@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from api import models, schemas
+from api import functions, models, schemas
 from api.database import engine, get_db
 from sqlalchemy import engine
 from sqlalchemy.orm.session import Session
@@ -22,12 +22,23 @@ def get_profiles(db: Session = Depends(get_db)):
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 # def create_profile(profile: ProfileCreate, db: Session = Depends(get_db)):
-def create_profile(profile: schemas.ProfileBase, db: Session = Depends(get_db)):
+def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)):
 
+    os_name = profile.os_name
+    os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
 
-    # password_hash = functions.hash_password(profile.password)
-    # profile.password = password_hash
-    new_profile = models.Profile(**profile.dict())
+    baseline_name = profile.baseline_name
+    found_baseline_id = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first().id
+    
+    new_profile = models.Profile(
+        fqdn = profile.fqdn,
+        baseline_id = found_baseline_id,
+        ip = profile.ip,
+        netmask = profile.netmask,
+        gateway = profile.gateway,
+        default_pass = functions.hash_password(profile.password)
+    )
+    # new_profile = models.Profile(**profile.dict())
 
     try:
         db.add(new_profile)
