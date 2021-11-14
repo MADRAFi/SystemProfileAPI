@@ -12,8 +12,9 @@ router = APIRouter()
 # OS Systems
 #######################################################################################################################
 
-@router.get("/os_systems")
+@router.get("/systems")
 def get_systems(db: Session = Depends(get_db)):
 
     systems = db.query(models.SystemOS).all()
-    return { "data": systems}
+    # return { "data": systems}
+    return systems

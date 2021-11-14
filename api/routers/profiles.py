@@ -6,19 +6,21 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix= "/profiles"
+)
 
 #######################################################################################################################
 # Profiles
 #######################################################################################################################
 
-@router.get("/profiles")
+@router.get("/")
 def get_profiles(db: Session = Depends(get_db)):
 
     profiles = db.query(models.Profile).all()
     return profiles
 
-@router.post("/profiles", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 # def create_profile(profile: ProfileCreate, db: Session = Depends(get_db)):
 def create_profile(profile: schemas.ProfileBase, db: Session = Depends(get_db)):
 
@@ -38,7 +40,7 @@ def create_profile(profile: schemas.ProfileBase, db: Session = Depends(get_db)):
         # return {"data": str(error.__cause__)}
         return str(error.__cause__)
 
-@router.get("/profiles/{server_name}")
+@router.get("/{server_name}")
 def get_profile(server_name: str, db: Session = Depends(get_db)):
     profile = db.query(models.Profile).filter(models.Profile.name == server_name).first()
     if not profile:
@@ -46,7 +48,7 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
                             detail=f"Profile for server {server_name} was not found")
     return profile
 
-@router.delete("/profiles/{server_name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{server_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_profile(server_name: str, db: Session = Depends(get_db)):
     profileq = db.query(models.Profile).filter(models.Profile.name == server_name)
     profile = profileq.first()
@@ -58,7 +60,7 @@ def delete_profile(server_name: str, db: Session = Depends(get_db)):
         db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put("/profiles/{server_name}")
+@router.put("/{server_name}")
 # def update_profile(server_name: str, profile: ProfileCreate, db: Session = Depends(get_db)):
 def update_profile(server_name: str, profile: schemas.ProfileBase, db: Session = Depends(get_db)):
     profileq = db.query(models.Profile).filter(models.Profile.name == server_name)
