@@ -6,19 +6,21 @@ from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix = "/baselines"
+)
 
 #######################################################################################################################
 # Baselines
 #######################################################################################################################
 
-@router.get("/baselines")
+@router.get("/")
 def get_baselines(db: Session = Depends(get_db)):
 
     baselines = db.query(models.Baseline).all()
     return baselines
 
-@router.post("/baselines", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED)
 def add_baseline(baseline: schemas.BaselineCreate, db: Session = Depends(get_db)):
     os_name = baseline.system_os
     os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
@@ -36,7 +38,7 @@ def add_baseline(baseline: schemas.BaselineCreate, db: Session = Depends(get_db)
         return str(error.__cause__)
 
 # @api.get("/baselines/{os_name}", response_model=List[schemas.BaselineResponse])
-@router.get("/baselines/{os_name}")
+@router.get("/{os_name}")
 def get_baselines(os_name: str, db: Session = Depends(get_db)):
 # @api.get("/baselines/{os_name}", response_model=schemas.BaselineBase)
 # def get_baseline(os_name: str, baselines: schemas.BaselineBase, db: Session = Depends(get_db)):
@@ -49,7 +51,7 @@ def get_baselines(os_name: str, db: Session = Depends(get_db)):
                             detail=f"Baseline for OS {os_name} was not found")
     return baselines
 
-@router.delete("/baselines/{os_name}/{baseline_name}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{os_name}/{baseline_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_baseline(os_name: str, baseline_name: str, db: Session = Depends(get_db)):
     os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
     baselineq = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name))
