@@ -1,17 +1,6 @@
 
 from pydantic import BaseModel
-
 from api.models import SystemOS
-
-class ProfileBase(BaseModel):
-    name: str
-    fqdn: str
-    ip: str
-    netmask: str
-    gateway: str
-
-# class ProfileCreate(ProfileBase):
-#     pass
 
 class SystemBase(BaseModel):
     name: str
@@ -37,14 +26,25 @@ class BaselineResponse(BaseModel):
     class Config:
         orm_mode = True
 
-class ProfileCreate(BaseModel):
+class ProfileOut(BaseModel):
     fqdn: str
+    ip: str
+    netmask: str
+    gateway: str    
+    class Config:
+        orm_mode = True
+
+class ProfileCreate(ProfileOut):
     os_name: str
     baseline_name: str
+    password: str
+    class Config:
+        orm_mode = True
+
+class ProfileUpdate(ProfileOut):
+    fqdn: str
+    baseline_id: int
     ip: str
     netmask: str
     gateway: str
-    password: str
-
-    class Config:
-        orm_mode = True
+    default_pass: str
