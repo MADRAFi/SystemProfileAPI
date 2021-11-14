@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from starlette.routing import Router
 from api import models, schemas
 from api.database import engine, get_db
 from sqlalchemy import engine

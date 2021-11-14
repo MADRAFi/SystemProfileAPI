@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from api import functions, models, schemas
 from api.database import engine, get_db
@@ -5,6 +6,8 @@ from sqlalchemy import engine
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
 
+
+profilespath = 'profiles/'
 
 router = APIRouter(
     prefix= "/profiles"
@@ -14,13 +17,13 @@ router = APIRouter(
 # Profiles
 #######################################################################################################################
 
-@router.get("/")
+@router.get("/", response_model= List[schemas.ProfileOut])
 def get_profiles(db: Session = Depends(get_db)):
 
     profiles = db.query(models.Profile).all()
     return profiles
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model= schemas.ProfileOut)
 # def create_profile(profile: ProfileCreate, db: Session = Depends(get_db)):
 def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)):
 
@@ -51,17 +54,29 @@ def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)
         # return {"data": str(error.__cause__)}
         return str(error.__cause__)
 
-@router.get("/{server_name}")
+@router.get("/{server_name}", response_model= schemas.ProfileOut)
 def get_profile(server_name: str, db: Session = Depends(get_db)):
-    profile = db.query(models.Profile).filter(models.Profile.name == server_name).first()
+    profile = db.query(models.Profile).filter(models.Profile.fqdn == server_name).first()
     if not profile:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Profile for server {server_name} was not found")
     return profile
 
+@router.get("/{server_name}/download")
+def get_profile(server_name: str, db: Session = Depends(get_db)):
+    profile = db.query(models.Profile).filter(models.Profile.fqdn == server_name).first()
+    if not profile:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Profile for server {server_name} was not found")
+    else:
+        functions.save_profile(profilespath, profile)
+
+
+    return profile.fqdn
+
 @router.delete("/{server_name}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_profile(server_name: str, db: Session = Depends(get_db)):
-    profileq = db.query(models.Profile).filter(models.Profile.name == server_name)
+    profileq = db.query(models.Profile).filter(models.Profile.fqdn == server_name)
     profile = profileq.first()
     if profile == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -71,16 +86,30 @@ def delete_profile(server_name: str, db: Session = Depends(get_db)):
         db.commit()
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@router.put("/{server_name}")
+@router.put("/{server_name}", response_model= schemas.ProfileOut)
 # def update_profile(server_name: str, profile: ProfileCreate, db: Session = Depends(get_db)):
-def update_profile(server_name: str, profile: schemas.ProfileBase, db: Session = Depends(get_db)):
-    profileq = db.query(models.Profile).filter(models.Profile.name == server_name)
+def update_profile(server_name: str, profile: schemas.ProfileCreate, db: Session = Depends(get_db)):
+    profileq = db.query(models.Profile).filter(models.Profile.fqdn == server_name)
     existing_profile = profileq.first()
     if existing_profile == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Profile for server {server_name} does not exists")
     else:
-        profileq.update(profile.dict(), synchronize_session=False)
+        os_name = profile.os_name
+        os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
+
+        baseline_name = profile.baseline_name
+        found_baseline_id = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first().id
+        
+        new_profile = schemas.ProfileUpdate(
+            fqdn = profile.fqdn,
+            baseline_id = found_baseline_id,
+            ip = profile.ip,
+            netmask = profile.netmask,
+            gateway = profile.gateway,
+            default_pass = functions.hash_password(profile.password)
+        )
+        profileq.update(new_profile.dict(), synchronize_session=False)
         db.commit()
         # return { "profile" : profileq.first()}
-        return profileq.first()
+        return new_profile
