@@ -1,13 +1,10 @@
 from typing import List
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from api import functions, models, schemas
+from .. import functions, models, schemas, constants
 from api.database import engine, get_db
 from sqlalchemy import engine
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
-
-
-profilespath = 'profiles/'
 
 router = APIRouter(
     prefix= "/profiles"
@@ -69,7 +66,7 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Profile for server {server_name} was not found")
     else:
-        functions.save_profile(profilespath, profile)
+        functions.save_profile(constants.profilespath, profile)
 
 
     return profile.fqdn
