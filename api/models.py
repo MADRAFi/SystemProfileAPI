@@ -1,11 +1,12 @@
 from sqlalchemy.sql.elements import False_
 from sqlalchemy.sql.expression import null, text
-from sqlalchemy.sql.schema import ForeignKey, ForeignKeyConstraint
+from sqlalchemy.sql.schema import DefaultGenerator, ForeignKey, ForeignKeyConstraint
 from .database import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import TIMESTAMP, Integer
+from sqlalchemy.sql.sqltypes import BLOB, TIMESTAMP, Integer
+from . import constants
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -16,7 +17,12 @@ class Profile(Base):
     ip = Column(String, nullable=False)
     netmask = Column(String, nullable=False)
     gateway = Column(String, nullable=False)
+    mac_address = Column(String, nullable=True)
     default_pass = Column(String, nullable=False)
+    # disk_layout = Column(BLOB, nullable=False, default=constants.disk_layout)
+    timezone = Column(String, nullable=False, default=constants.timezone)
+    language = Column(String, nullable=False, default=constants.language)
+    keyboard = Column(String, nullable=False, default=constants.keyboard)
     created = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("(datetime())"))
 
     baselines = relationship("Baseline", back_populates="profiles")
