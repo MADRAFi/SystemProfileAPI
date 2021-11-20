@@ -2,11 +2,11 @@
 from typing import Literal
 
 
-pipprofilespath = 'profiles/'
+profilespath = 'profiles/'
 templatespath = 'templates/'
 kickstart_file = 'ks.cfg'
 timezone = "America/New_York"
-language = "en_us"
+language = "en_US.UTF-8"
 keyboard = "us"
 
 timezone_list = Literal[
@@ -16,7 +16,7 @@ timezone_list = Literal[
     ]
 
 language_list = Literal[
-        'en_us',
+        'en_US.UTF-8',
         'jp_jp',
         'de_de'
     ]

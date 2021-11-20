@@ -68,7 +68,7 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
                             detail=f"Profile for server {server_name} was not found")
     return profile
 
-@router.get("/{server_name}/download")
+@router.get("/{server_name}/download", response_model= schemas.ProfileOut)
 def get_profile(server_name: str, db: Session = Depends(get_db)):
     profile = db.query(models.Profile).filter(models.Profile.fqdn == server_name).first()
     if not profile:
