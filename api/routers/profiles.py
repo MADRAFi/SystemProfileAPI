@@ -2,14 +2,15 @@ from datetime import timezone
 from typing import List, Optional
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from sqlalchemy.sql.sqltypes import BLOB
-from .. import functions, models, schemas, constants
+from .. import functions, models, schemas, constants, iso
 from api.database import engine, get_db
 from sqlalchemy import engine
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
 
 router = APIRouter(
-    prefix= "/profiles"
+    prefix= "/profiles",
+    tags=['Profiles']
 )
 
 #######################################################################################################################
@@ -75,7 +76,16 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Profile for server {server_name} was not found")
     else:
-        functions.save_profile(constants.profilespath, profile)
+        # profileq = db.query(models.Baseline, models.SystemOS).filter(models.Baseline.id == profile.baseline_id).filter(models.SystemOS.id == models.Baseline.system_id).first()
+        # os_name = profileq.name
+
+        system_id = db.query(models.Baseline).filter(models.Baseline.id == profile.baseline_id).first().system_id
+        os_name = db.query(models.SystemOS).filter(models.SystemOS.id == system_id).first().name
+
+        rootpath = constants.profilespath + profile.fqdn
+        isofile = profile.fqdn + constants.isofile_sufix
+        functions.save_profile(rootpath, os_name, profile)
+        iso.create(rootpath, os_name, isofile)
 
 
     return profile

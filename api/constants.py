@@ -2,9 +2,22 @@
 from typing import Literal
 
 
-profilespath = 'profiles/'
-templatespath = 'templates/'
+profilespath = "profiles/"
+templatespath = "templates/"
+isosourcepath = "iso/"
 kickstart_file = 'ks.cfg'
+isolinux_file = 'isolinux.cfg'
+kickstart_template_prefix = "ks_"
+isolinux_template_prefix = "isolinux_"
+template_sufix = ".jinja2"
+isofile_sufix = ".boot.iso"
+isosource = {
+    'RHEL_7' : 'rhel-7.9-x86_64-boot.iso',
+    'RHEL_8' : 'rhel-8.5-x86_64-boot.iso',
+    'RHEL_9' : 'rhel-baseos-9.0-beta-0-x86_64-boot.iso'
+}
+
+
 timezone = "America/New_York"
 language = "en_US.UTF-8"
 keyboard = "us"

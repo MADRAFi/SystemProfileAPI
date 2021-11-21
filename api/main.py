@@ -13,12 +13,13 @@ from .routers import baselines, profiles, systems
 
 models.Base.metadata.create_all(bind=engine)
 
-api = FastAPI(title="SysProfileAPI", version="0.4.0")
+api = FastAPI(title="SysProfileAPI", version="0.5.0")
 
 api.include_router(baselines.router)
 api.include_router(profiles.router)
 api.include_router(systems.router)
 
+
 @api.get("/")
 async def root():
-    return {"messaage":"Welcome to SysProfile API"}
+    return {"messaage":"Welcome to " + api.title + " " + api.version}
