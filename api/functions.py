@@ -5,7 +5,6 @@ from os import makedirs
 
 # from . import schemas, constants
 from . import models, schemas, constants
-from sqlalchemy.orm.session import Session
 from jinja2 import Template
 
 
