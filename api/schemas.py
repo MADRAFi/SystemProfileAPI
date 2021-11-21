@@ -1,9 +1,6 @@
 
-from datetime import timezone
-from typing import List, Dict, Literal, Optional
+from typing import Optional
 from pydantic import BaseModel
-from pydantic.typing import literal_values
-from sqlalchemy.sql.sqltypes import BLOB
 from . import constants
 # from api.models import SystemOS
 
@@ -38,6 +35,22 @@ class BaselineResponse(BaseModel):
 #             'Asia/Singapore'
 #         ]
 
+class JsonData(BaseModel):
+    # runlist: Optional[str]
+    # auth_model: Optional[str]
+    runlist: str
+    auth_model: str
+
+class DiskLayout(BaseModel):
+    boot: int
+    swap: int
+    root: int
+    tmp: int
+    home: int
+    var: int
+    opt: int
+    
+
 class Profile(BaseModel):
     fqdn: str
     baseline_id: int
@@ -47,6 +60,8 @@ class Profile(BaseModel):
     default_pass: str
     mac_address: Optional[str]
     # disk_layout: Optional[BLOB]
+    disk_layout: Optional[DiskLayout] = None
+    jsondata: Optional[JsonData] = None
     timezone: constants.timezone_list
     language: constants.language_list
     keyboard: constants.keyboard_list
@@ -68,6 +83,8 @@ class ProfileCreate(ProfileOut):
     password: str
     mac_address: Optional[str]
     # disk_layout: Optional[BLOB]
+    disk_layout: Optional[DiskLayout] = None
+    jsondata: Optional[JsonData] = None
     timezone: constants.timezone_list
     language: constants.language_list
     keyboard: constants.keyboard_list
@@ -83,8 +100,10 @@ class ProfileUpdate(ProfileOut):
     netmask: str
     gateway: str
     password: str
-    mac_address: Optional[str]
+    mac_address: Optional[str] = None
     # disk_layout: Optional[BLOB]
+    disk_layout: Optional[DiskLayout] = None
+    jsondata: Optional[JsonData] = None
     timezone: constants.timezone_list
     language: constants.language_list
     keyboard: constants.keyboard_list

@@ -1,12 +1,8 @@
-from datetime import timezone
-from typing import List, Optional
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from sqlalchemy.sql.sqltypes import BLOB
+from typing import List
+from fastapi import Response, status, HTTPException, Depends, APIRouter
 from .. import functions, models, schemas, constants, iso
-from api.database import engine, get_db
-from sqlalchemy import engine
+from api.database import get_db
 from sqlalchemy.orm.session import Session
-from sqlalchemy.sql.functions import mode
 
 router = APIRouter(
     prefix= "/profiles",
@@ -41,6 +37,8 @@ def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)
         gateway = profile.gateway,
         default_pass = functions.hash_password(profile.password),
         mac_address = profile.mac_address,
+        disk_layout = profile.disk_layout,
+        jsondata = profile.jsondata,
         timezone = profile.timezone,
         language = profile.language,
         keyboard = profile.keyboard
@@ -126,6 +124,7 @@ def update_profile(server_name: str, profile: schemas.ProfileUpdate, db: Session
         baseline_name = profile.baseline_name
         found_baseline_id = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first().id
         
+        # print(profile.jsondata)
         new_profile = schemas.Profile(
             fqdn = profile.fqdn,
             baseline_id = found_baseline_id,
@@ -134,13 +133,18 @@ def update_profile(server_name: str, profile: schemas.ProfileUpdate, db: Session
             gateway = profile.gateway,
             default_pass = functions.hash_password(profile.password),
             mac_address = profile.mac_address,
+            disk_layout = profile.disk_layout or constants.disk_layout,
+            jsondata = profile.jsondata or constants.json,
             timezone = profile.timezone,
             language = profile.language,
             keyboard = profile.keyboard
-
-            # disk_layout = bytearray(profile.disk_layout)
         )
+        # new_profile = models.Profile(
+        #     baseline_id = found_baseline_id,
+        #     default_pass = functions.hash_password(profile.password),
+        #     **dict_profile
+        # )
+        
         profileq.update(new_profile.dict(), synchronize_session=False)
         db.commit()
-        # return { "profile" : profileq.first()}
         return new_profile

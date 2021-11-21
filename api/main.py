@@ -1,6 +1,4 @@
-from typing import Optional, List
-from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
-from fastapi.params import Body
+from fastapi import FastAPI
 
 # from passlib.utils.decor import deprecated_method
 from sqlalchemy import engine
@@ -13,7 +11,7 @@ from .routers import baselines, profiles, systems
 
 models.Base.metadata.create_all(bind=engine)
 
-api = FastAPI(title="SysProfileAPI", version="0.5.0")
+api = FastAPI(title="SysProfileAPI", version="0.6.0")
 
 api.include_router(baselines.router)
 api.include_router(profiles.router)

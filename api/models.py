@@ -1,12 +1,12 @@
-from sqlalchemy.sql.elements import False_
-from sqlalchemy.sql.expression import null, text
-from sqlalchemy.sql.schema import DefaultGenerator, ForeignKey, ForeignKeyConstraint
+from sqlalchemy.sql.expression import text
+from sqlalchemy.sql.schema import ForeignKey
 from .database import Base
 from sqlalchemy import Column, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.expression import text
-from sqlalchemy.sql.sqltypes import BLOB, TIMESTAMP, Integer
+from sqlalchemy.sql.sqltypes import JSON, TIMESTAMP, Integer
 from . import constants
+
 
 class Profile(Base):
     __tablename__ = "profiles"
@@ -20,6 +20,8 @@ class Profile(Base):
     mac_address = Column(String, nullable=True)
     default_pass = Column(String, nullable=False)
     # disk_layout = Column(BLOB, nullable=False, default=constants.disk_layout)
+    disk_layout = Column(JSON, nullable=False, default=constants.disk_layout)
+    jsondata = Column(JSON, nullable=False, default=constants.json); alias='json'
     timezone = Column(String, nullable=False, default=constants.timezone)
     language = Column(String, nullable=False, default=constants.language)
     keyboard = Column(String, nullable=False, default=constants.keyboard)
