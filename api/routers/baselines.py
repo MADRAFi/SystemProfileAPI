@@ -7,7 +7,8 @@ from sqlalchemy.sql.functions import mode
 
 
 router = APIRouter(
-    prefix = "/baselines"
+    prefix = "/baselines",
+    tags=['Baselines']
 )
 
 #######################################################################################################################

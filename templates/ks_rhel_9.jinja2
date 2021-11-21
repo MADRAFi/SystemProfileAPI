@@ -1,18 +1,18 @@
-# ks.cfg for rhel7
+# ks.cfg for rhel9
 
 #platform=x86, AMD64, or Intel EM64T
 #version=DEVEL
 # Install OS instead of upgrade
 #install
 # Keyboard layouts
-keyboard --vckeymap=us --xlayouts=''
+keyboard --vckeymap={{keyboard}} --xlayouts=''
 # Root password
-rootpw --plaintext notMyRootPw
+rootpw --iscrypted {{password}}
 # my user
-user --groups=wheel --name=bgstack15-local --password=$password --iscrypted --gecos="bgstack15-local"
+user --groups=wheel --name=bgstack15-local --password={{password}} --iscrypted --gecos="bgstack15-local"
 
 # System language
-lang en_US.UTF-8
+lang {{language}}
 # Firewall configuration
 firewall --enabled --ssh
 # Reboot after installation
@@ -20,9 +20,11 @@ reboot
 # Network information
 #attempting to put it in the included ks file that accepts hostname from the virsh command.
 #network  --bootproto=dhcp --device=eth0 --ipv6=auto --activate
-%include /tmp/network.ks
+network --bootproto=static --ip={{ip}} --netmask={{netmask}} --gateway={{gateway}}
+network --onboot yes --noipv6 --nameserver 192.168.1.254
+network --hostname {{fqdn}}
 # System timezone
-timezone America/New_York --utc
+timezone {{timezone}} --utc
 # System authorization information
 #auth  --useshadow  --passalgo=sha512
 # Use network installation instead of CDROM installation media
@@ -72,7 +74,7 @@ autopart --type=lvm
    dnf update -y ;
 
    # Remove graphical boot and add serial console
-   sed -i -r -e $GRUB
+   sed -i -r -e {{GRUB}}
    grub2-mkconfig > /boot/grub2/grub.cfg
 
    systemctl enable sendmail.service && systemctl start sendmail.service

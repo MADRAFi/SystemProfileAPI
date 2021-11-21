@@ -5,13 +5,15 @@ from sqlalchemy import engine
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.functions import mode
 
-router = APIRouter()
-
+router = APIRouter(
+    prefix= "/systems",
+    tags=['Systems']
+)
 #######################################################################################################################
 # OS Systems
 #######################################################################################################################
 
-@router.get("/systems")
+@router.get("/")
 def get_systems(db: Session = Depends(get_db)):
 
     systems = db.query(models.SystemOS).all()

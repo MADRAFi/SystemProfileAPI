@@ -1,8 +1,13 @@
 # from passlib.context import CryptContext
-import bcrypt, base64, hashlib
-from os import makedirs, getcwd
-from . import schemas, constants
-from string import Template
+# import bcrypt, base64
+import hashlib
+from os import makedirs
+
+# from . import schemas, constants
+from . import models, schemas, constants
+from sqlalchemy.orm.session import Session
+from jinja2 import Template
+
 
 # pwd_context = CryptContext(schemes=["bcrypt"])
 
@@ -16,34 +21,48 @@ def hash_password(password: str):
     # hashed = pwd_context.hash(password)
     return hashed
 
-def save_profile(rootpath: str,  profile: schemas.ProfileCreate ):
+def save_profile(path: str, os_name: str, profile: schemas.Profile):
    
-    path = rootpath + profile.fqdn
+    # path = rootpath + profile.fqdn
+    definition = {
+        'timezone': profile.timezone,
+        'language': profile.language,
+        'keyboard': profile.keyboard,
+        'password': profile.default_pass,
+        'ip': profile.ip,
+        'netmask': profile.netmask,
+        'gateway': profile.gateway,
+        'fqdn': profile.fqdn
+    }
+    ks_template = constants.kickstart_template_prefix + os_name + constants.template_sufix
+    isolinux_template = constants.isolinux_template_prefix + os_name + constants.template_sufix
+
     try:
-
         makedirs(path, exist_ok=True)
-
-        definition = {
-            'title': 'This is the title',
-            'subtitle': 'And this is the subtitle',
-            'password': 'pass',
-            'GRUB': "'/^GRUB_CMDLINE_LINUX=/{s/(\s*)(rhgb|quiet)\s*/\1/g;};' -e '/^GRUB_CMDLINE_LINUX=/{s/(\s*)$/ console=ttyS0 console=tty1\"/;}' /etc/default/grub"
-        }
         
-        # read template
-        ksfile = 'rhel9.cfg'
-        with open(constants.templatespath + ksfile, 'r') as t:
+        # read ks template
+        with open(constants.templatespath + ks_template, 'r') as t:
             template = Template(t.read())
-            result = template.substitute(definition)
+            result = template.render(definition)
         t.close()
-        
+
         # save
         with open(path + '/' + constants.kickstart_file, 'w') as f:
             f.write(result)
-            f.write('ip=' + profile.ip )
         f.close()
 
+
+        # read isolinux template
+        with open(constants.templatespath + isolinux_template, 'r') as t:
+            template = Template(t.read())
+            result = template.render(definition)
+        t.close()
+
+        # save
+        with open(path + '/' + constants.isolinux_file, 'w') as f:
+            f.write(result)
+        f.close()
+        
     except Exception as error:
         print("Error:", error)
         return str(error)
-
