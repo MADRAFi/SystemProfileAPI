@@ -32,7 +32,7 @@ def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)
                             detail=f"OS {os_name} does not exist")
 
     baseline_name = profile.baseline_name
-    baselineq = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first()
+    baselineq = db.query(models.Baseline).filter((models.Baseline.system_id == osq.id) & (models.Baseline.name == baseline_name)).first()
     if baselineq == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Baseline {baseline_name} for {os_name} does not exist")
