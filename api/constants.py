@@ -39,7 +39,10 @@ keyboard_list = Literal[
         'de'
     ]
 
-json = {}
+json = {
+    "auth_model":"KDCLDAP",
+    "runlist":"playbook1"
+}
 
 disk_layout = {
     "boot": 1024,

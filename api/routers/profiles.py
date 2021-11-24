@@ -122,13 +122,12 @@ def delete_profile(server_name: str, db: Session = Depends(get_db)):
 def update_profile(server_name: str, profile: schemas.ProfileUpdate, db: Session = Depends(get_db)):
     profileq = db.query(models.Profile).filter(models.Profile.fqdn == server_name)
     existing_profile = profileq.first()
-
-    if profile.fqdn != server_name:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Provided server {server_name} is different then specified in json {profile.fqdn}")
     if existing_profile == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"Profile for server {server_name} does not exist")
+    if profile.fqdn != server_name:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Provided server {server_name} is different then specified in json {profile.fqdn}")
     else:
         os_name = profile.os_name
         osq = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first()
