@@ -11,7 +11,7 @@ from .routers import baselines, profiles, systems
 
 models.Base.metadata.create_all(bind=engine)
 
-api = FastAPI(title="SysProfileAPI", version="0.6.0")
+api = FastAPI(title="SysProfileAPI", version="0.6.1")
 
 api.include_router(baselines.router)
 api.include_router(profiles.router)

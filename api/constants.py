@@ -12,14 +12,14 @@ isolinux_template_prefix = "isolinux_"
 template_sufix = ".jinja2"
 isofile_sufix = ".boot.iso"
 isosource = {
-    'RHEL_7' : 'rhel-7.9-x86_64-boot.iso',
-    'RHEL_8' : 'rhel-8.5-x86_64-boot.iso',
-    'RHEL_9' : 'rhel-baseos-9.0-beta-0-x86_64-boot.iso'
+    'rhel_7' : 'rhel-7.9-x86_64-boot.iso',
+    'rhel_8' : 'rhel-8.5-x86_64-boot.iso',
+    'rhel_9' : 'rhel-baseos-9.0-beta-0-x86_64-boot.iso'
 }
 
 
 timezone = "America/New_York"
-language = "en_US.UTF-8"
+language = "en_us"
 keyboard = "us"
 
 timezone_list = Literal[
@@ -29,7 +29,7 @@ timezone_list = Literal[
     ]
 
 language_list = Literal[
-        'en_US.UTF-8',
+        'en_us',
         'jp_jp',
         'de_de'
     ]

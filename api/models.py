@@ -19,7 +19,6 @@ class Profile(Base):
     gateway = Column(String, nullable=False)
     mac_address = Column(String, nullable=True)
     default_pass = Column(String, nullable=False)
-    # disk_layout = Column(BLOB, nullable=False, default=constants.disk_layout)
     disk_layout = Column(JSON, nullable=False, default=constants.disk_layout)
     jsondata = Column(JSON, nullable=False, default=constants.json); alias='json'
     timezone = Column(String, nullable=False, default=constants.timezone)
