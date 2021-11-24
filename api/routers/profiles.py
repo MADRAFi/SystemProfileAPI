@@ -1,5 +1,6 @@
 from typing import List
 from fastapi import Response, status, HTTPException, Depends, APIRouter
+from starlette.responses import FileResponse
 from .. import functions, models, schemas, constants, iso
 from api.database import get_db
 from sqlalchemy.orm.session import Session
@@ -24,21 +25,28 @@ def get_profiles(db: Session = Depends(get_db)):
 def create_profile(profile: schemas.ProfileCreate, db: Session = Depends(get_db)):
 
     os_name = profile.os_name
-    os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
+    osq = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first()
+
+    if osq == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"OS {os_name} does not exist")
 
     baseline_name = profile.baseline_name
-    found_baseline_id = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first().id
-    
+    baselineq = db.query(models.Baseline).filter((models.Baseline.system_id == osq.id) & (models.Baseline.name == baseline_name)).first()
+    if baselineq == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Baseline {baseline_name} for {os_name} does not exist")
+
     new_profile = models.Profile(
         fqdn = profile.fqdn,
-        baseline_id = found_baseline_id,
+        baseline_id = baselineq.id,
         ip = profile.ip,
         netmask = profile.netmask,
         gateway = profile.gateway,
         default_pass = functions.hash_password(profile.password),
-        mac_address = profile.mac_address,
-        disk_layout = profile.disk_layout,
-        jsondata = profile.jsondata,
+        mac_address = profile.mac_address or '',
+        disk_layout = profile.disk_layout or constants.disk_layout,
+        jsondata = profile.jsondata or constants.json,
         timezone = profile.timezone,
         language = profile.language,
         keyboard = profile.keyboard
@@ -78,7 +86,7 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
         # os_name = profileq.name
 
         system_id = db.query(models.Baseline).filter(models.Baseline.id == profile.baseline_id).first().system_id
-        os_name = db.query(models.SystemOS).filter(models.SystemOS.id == system_id).first().name
+        os_name = db.query(models.SystemOS).filter(models.SystemOS.id == system_id).first().name.lower()
 
         rootpath = constants.profilespath + profile.fqdn
         isofile = profile.fqdn + constants.isofile_sufix
@@ -86,7 +94,7 @@ def get_profile(server_name: str, db: Session = Depends(get_db)):
         iso.create(rootpath, os_name, isofile)
 
 
-    return profile
+    return FileResponse(rootpath + '/' + isofile, media_type='application/octet-stream', filename=isofile)
 
 @router.get("/{server_name}/debug")
 def get_profile(server_name: str, db: Session = Depends(get_db)):
@@ -114,25 +122,36 @@ def delete_profile(server_name: str, db: Session = Depends(get_db)):
 def update_profile(server_name: str, profile: schemas.ProfileUpdate, db: Session = Depends(get_db)):
     profileq = db.query(models.Profile).filter(models.Profile.fqdn == server_name)
     existing_profile = profileq.first()
+
+    if profile.fqdn != server_name:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Provided server {server_name} is different then specified in json {profile.fqdn}")
     if existing_profile == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"Profile for server {server_name} does not exists")
+                            detail=f"Profile for server {server_name} does not exist")
     else:
         os_name = profile.os_name
-        os_id = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first().id
+        osq = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first()
+        if osq == None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"OS {os_name} does not exist")
         
         baseline_name = profile.baseline_name
-        found_baseline_id = db.query(models.Baseline).filter((models.Baseline.system_id == os_id) & (models.Baseline.name == baseline_name)).first().id
+        baselineq = db.query(models.Baseline).filter((models.Baseline.system_id == osq.id) & (models.Baseline.name == baseline_name)).first()
+        if baselineq == None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Baseline {baseline_name} for OS {os_name} does not exist")
+        
         
         # print(profile.jsondata)
         new_profile = schemas.Profile(
             fqdn = profile.fqdn,
-            baseline_id = found_baseline_id,
+            baseline_id = baselineq.id,
             ip = profile.ip,
             netmask = profile.netmask,
             gateway = profile.gateway,
             default_pass = functions.hash_password(profile.password),
-            mac_address = profile.mac_address,
+            mac_address = profile.mac_address or '',
             disk_layout = profile.disk_layout or constants.disk_layout,
             jsondata = profile.jsondata or constants.json,
             timezone = profile.timezone,

@@ -21,19 +21,18 @@ class BaselineCreate(BaseModel):
     class Config:
         orm_mode = True
 
-class BaselineResponse(BaseModel):
+class BaselineList(BaseModel):
     name: str
     # url: str
     # system_id: SystemBase
     class Config:
         orm_mode = True
 
-# class localization(BaseModel):
-#     timezone: Literal[
-#             'America/New_York',
-#             'Europe/Warsaw',
-#             'Asia/Singapore'
-#         ]
+class BaselineDetail(BaselineList):
+    url: str
+    system_id: SystemBase
+    class Config:
+        orm_mode = True
 
 class JsonData(BaseModel):
     # runlist: Optional[str]
@@ -50,6 +49,11 @@ class DiskLayout(BaseModel):
     var: int
     opt: int
     
+# class Localization(BaseModel):
+#     timezone: constants.timezone_list
+#     language: constants.language_list
+#     keyboard: constants.keyboard_list
+
 
 class Profile(BaseModel):
     fqdn: str
@@ -65,6 +69,7 @@ class Profile(BaseModel):
     timezone: constants.timezone_list
     language: constants.language_list
     keyboard: constants.keyboard_list
+
     class Config:
         orm_mode = True
         arbitrary_types_allowed = True
