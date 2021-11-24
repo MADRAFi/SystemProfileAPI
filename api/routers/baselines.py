@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import FastAPI, Response, status, HTTPException, Depends, APIRouter
 from api import models, schemas
 from api.database import get_db
@@ -40,11 +41,8 @@ def add_baseline(baseline: schemas.BaselineCreate, db: Session = Depends(get_db)
         print("Error:", error.__cause__)
         return str(error.__cause__)
 
-# @api.get("/baselines/{os_name}", response_model=List[schemas.BaselineResponse])
-@router.get("/{os_name}")
+@router.get("/{os_name}", response_model=List[schemas.BaselineList])
 def get_baselines(os_name: str, db: Session = Depends(get_db)):
-# @api.get("/baselines/{os_name}", response_model=schemas.BaselineBase)
-# def get_baseline(os_name: str, baselines: schemas.BaselineBase, db: Session = Depends(get_db)):
 
     osq = db.query(models.SystemOS).filter(models.SystemOS.name == os_name).first()
     if osq == None:
